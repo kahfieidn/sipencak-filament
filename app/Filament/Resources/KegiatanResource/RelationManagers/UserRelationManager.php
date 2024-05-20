@@ -10,18 +10,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SubKegiatanRelationManager extends RelationManager
+class UserRelationManager extends RelationManager
 {
-    protected static string $relationship = 'sub_kegiatan';
+    protected static string $relationship = 'user';
 
     public function form(Form $form): Form
     {
         return $form
-            ->schema([    
-                Forms\Components\TextInput::make('kode')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('nama_sub_kegiatan')
+            ->schema([
+                Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -30,12 +27,9 @@ class SubKegiatanRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('kode')
+            ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('kode'),
-                Tables\Columns\TextColumn::make('nama_sub_kegiatan'),
-                Tables\Columns\TextInputColumn::make('pagu')
-                    ->rules(['required', 'max:255'])
+                Tables\Columns\TextColumn::make('name'),
             ])
             ->filters([
                 //
@@ -54,4 +48,3 @@ class SubKegiatanRelationManager extends RelationManager
             ]);
     }
 }
-

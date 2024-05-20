@@ -3,12 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PeriodeResource\Pages;
-use App\Filament\Resources\PeriodeResource\RelationManagers;
 use App\Filament\Resources\PeriodeResource\RelationManagers\KegiatanRelationManager;
-use App\Filament\Resources\PeriodeResource\RelationManagers\KegiatansRelationManager;
-use App\Filament\Resources\PeriodeResource\RelationManagers\ProgramRelationManager;
-use App\Filament\Resources\PeriodeResource\RelationManagers\ProgramsRelationManager;
-use App\Filament\Resources\PeriodeResource\RelationManagers\SubKegiatanRelationManager;
 use App\Models\Periode;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -23,6 +18,10 @@ class PeriodeResource extends Resource
     protected static ?string $model = Periode::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $navigationGroup = 'System Configuration';
+
+
 
     public static function form(Form $form): Form
     {

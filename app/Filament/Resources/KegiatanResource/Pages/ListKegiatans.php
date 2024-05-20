@@ -6,9 +6,10 @@ use Closure;
 use Filament\Actions;
 use App\Models\Kegiatan;
 
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Resources\Components\Tab;
+use Filament\Actions\Exports\ExportColumn;
 use App\Filament\Resources\KegiatanResource;
 
 
@@ -22,8 +23,6 @@ class ListKegiatans extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
-
-
 
     public function getTabs(): array
     {
@@ -39,6 +38,4 @@ class ListKegiatans extends ListRecords
             }),
         ];
     }
-
-
 }

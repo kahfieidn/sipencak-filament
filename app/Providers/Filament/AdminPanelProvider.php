@@ -71,6 +71,6 @@ class AdminPanelProvider extends PanelProvider
                 PanelRoles::make()
                     ->roleToAssign('panel_user')
                     ->restrictedRoles(['super_admin']),
-            );
+            )->databaseNotifications();
     }
 }
