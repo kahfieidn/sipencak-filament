@@ -23,8 +23,6 @@ class KegiatanExporter extends Exporter
             ExportColumn::make('nama_kegiatan'),
             ExportColumn::make('pagu'),
             ExportColumn::make('status'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
         ];
     }
 

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users');
             $table->string('kode');
             $table->string('nama_kegiatan');
-            $table->decimal('pagu')->default(0);
+            $table->bigInteger('pagu')->default(0);
             $table->enum('status', ['Dibuka', 'Dikunci']);
             $table->timestamps();
         });

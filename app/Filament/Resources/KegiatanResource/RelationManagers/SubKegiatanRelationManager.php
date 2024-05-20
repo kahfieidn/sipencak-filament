@@ -2,13 +2,19 @@
 
 namespace App\Filament\Resources\KegiatanResource\RelationManagers;
 
+use App\Models\SubKegiatan;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Summarizers\Sum;
+
+
+use Filament\Tables\Columns\Summarizers\Count;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class SubKegiatanRelationManager extends RelationManager
 {
@@ -17,7 +23,7 @@ class SubKegiatanRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form
-            ->schema([    
+            ->schema([
                 Forms\Components\TextInput::make('kode')
                     ->required()
                     ->maxLength(255),
@@ -34,8 +40,11 @@ class SubKegiatanRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('kode'),
                 Tables\Columns\TextColumn::make('nama_sub_kegiatan'),
-                Tables\Columns\TextInputColumn::make('pagu')
-                    ->rules(['required', 'max:255'])
+                Tables\Columns\TextColumn::make('pagu')
+                    ->label('Pagu')
+                    ->summarize(
+                        Sum::make('pagu')
+                    ),
             ])
             ->filters([
                 //
@@ -46,6 +55,25 @@ class SubKegiatanRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('Input Biaya')
+                    ->fillForm(fn (SubKegiatan $record): array => [
+                        'id' => $record->id,
+                        'pagu' => $record->pagu, // Ensure the pagu field is included in the form fill
+                    ])
+                    ->form([
+                        Select::make('id')
+                            ->label('ID User')
+                            ->options(SubKegiatan::query()->pluck('kode', 'id'))
+                            ->required(),
+                        Forms\Components\TextInput::make('pagu') // Ensure this field is required if needed
+                            ->label('Pagu') // Add a label for clarity
+                            ->required(), // Add validation if necessary
+                    ])
+                    ->action(function (array $data, SubKegiatan $record): void {
+                        $record->id = $data['id']; // Set the ID directly
+                        $record->pagu = $data['pagu']; // Set the pagu attribute directly
+                        $record->save(); // Save the record
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -54,4 +82,3 @@ class SubKegiatanRelationManager extends RelationManager
             ]);
     }
 }
-

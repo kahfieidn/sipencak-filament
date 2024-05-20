@@ -14,13 +14,14 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Collection;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use App\Filament\Exports\KegiatanExporter;
 use Filament\Tables\Columns\Summarizers\Sum;
 use App\Filament\Resources\KegiatanResource\Pages;
+use App\Filament\Resources\KegiatanResource\RelationManagers\UserRelationManager;
 use App\Filament\Resources\KegiatanResource\RelationManagers\SubKegiatanRelationManager;
 use App\Filament\Resources\KegiatanResource\RelationManagers\SubKegiatansRelationManager;
-use App\Filament\Resources\KegiatanResource\RelationManagers\UserRelationManager;
 
 class KegiatanResource extends Resource
 {
@@ -118,8 +119,11 @@ class KegiatanResource extends Resource
                     ->sortable()
                     ->summarize([
                         Sum::make()
-                            ->label('Total Pagu'),
-                    ]),
+                            ->label('Total Pagu')
+                            ->money('Rp.')
+                            ->numeric(decimalPlaces: 2),
+                    ])->money('Rp.')
+                    ->numeric(decimalPlaces: 2),
                 Tables\Columns\TextColumn::make('status')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -141,7 +145,24 @@ class KegiatanResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ExportBulkAction::make()
-                    ->exporter(KegiatanExporter::class)
+                        ->exporter(KegiatanExporter::class),
+                    Tables\Actions\BulkAction::make('Change Status')
+                        ->icon('heroicon-m-lock-closed')
+                        ->requiresConfirmation()
+                        ->form([
+                            Select::make('status')
+                                ->options([
+                                    'Dibuka' => 'Dibuka',
+                                    'Dikunci' => 'Dikunci',
+                                ])
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            return $records->each(function ($record) use ($data) {
+                                $id = $record->id;
+                                Kegiatan::where('id', $id)->update(['status' => $data['status']]);
+                            });
+                        }),
+
                 ]),
             ]);
     }

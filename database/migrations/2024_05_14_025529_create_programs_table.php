@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('periode_id')->constrained('periodes');
             $table->string('kode');
             $table->string('nama_program');
-            $table->decimal('pagu')->default(0);
+            $table->bigInteger('pagu')->default(0);
             $table->timestamps();
         });
     }

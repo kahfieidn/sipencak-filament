@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('kegiatan_id')->constrained('kegiatans');
             $table->string('kode');
             $table->string('nama_sub_kegiatan');
-            $table->decimal('pagu')->default(0);
+            $table->bigInteger('pagu')->default(0);
             $table->timestamps();
         });
     }
