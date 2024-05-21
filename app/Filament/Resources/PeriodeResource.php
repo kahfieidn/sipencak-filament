@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PeriodeResource\Pages;
 use App\Filament\Resources\PeriodeResource\RelationManagers\KegiatanRelationManager;
+use App\Filament\Resources\PeriodeResource\RelationManagers\ProgramRelationManager;
 use App\Models\Periode;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -17,7 +18,7 @@ class PeriodeResource extends Resource
 {
     protected static ?string $model = Periode::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static ?string $navigationGroup = 'System Configuration';
 
@@ -73,6 +74,7 @@ class PeriodeResource extends Resource
     {
         return [
             //
+            ProgramRelationManager::class,
             KegiatanRelationManager::class,
         ];
     }

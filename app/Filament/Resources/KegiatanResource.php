@@ -16,7 +16,9 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Collection;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Notifications\Notification;
 use App\Filament\Exports\KegiatanExporter;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use App\Filament\Resources\KegiatanResource\Pages;
 use App\Filament\Resources\KegiatanResource\RelationManagers\UserRelationManager;
@@ -27,7 +29,7 @@ class KegiatanResource extends Resource
 {
     protected static ?string $model = Kegiatan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationGroup = 'Activity';
 
@@ -96,7 +98,22 @@ class KegiatanResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('pagu')
                             ->required()
-                            ->maxLength(255),
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set, $get) {
+                                $program = Program::find($get('program_id'));
+                                $jumlah_pagu_program = $program->kegiatan->sum('pagu');
+                                $pagu_kegiatan_sebelumnya = Kegiatan::where('id', $get('id'))->pluck('pagu')->first();
+
+                                if (($jumlah_pagu_program + $get('pagu') - $pagu_kegiatan_sebelumnya) > $program->pagu) {
+                                    $set('pagu', $pagu_kegiatan_sebelumnya);
+                                    Notification::make()
+                                        ->title('Pagu Kegiatan Melebihi Batas')
+                                        ->body('Pagu tidak boleh melebihi dari pagu program sebesar Rp.' . $program->pagu)
+                                        ->danger()
+                                        ->send();
+                                }
+                            })
+                            ->numeric(),
                     ])->columns(3)
                     ->collapsible()
             ]);
