@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('periodes', function (Blueprint $table) {
             $table->id();
             $table->string('year')->unique();
-            $table->decimal('batasan_pagu')->default(0);
+            $table->bigInteger('batasan_pagu')->default(0);
             $table->timestamps();
         });
     }

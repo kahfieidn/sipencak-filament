@@ -100,17 +100,31 @@ class KegiatanResource extends Resource
                             ->required()
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {
+
                                 $program = Program::find($get('program_id'));
+
+                                if (!$program) {
+                                    Notification::make()
+                                        ->title('Program Wajib di Isi')
+                                        ->body('Program harus di pilih terlebih dahulu.')
+                                        ->danger()
+                                        ->send();
+                                    return;
+                                }
                                 $jumlah_pagu_program = $program->kegiatan->sum('pagu');
                                 $pagu_kegiatan_sebelumnya = Kegiatan::where('id', $get('id'))->pluck('pagu')->first();
 
-                                if (($jumlah_pagu_program + $get('pagu') - $pagu_kegiatan_sebelumnya) > $program->pagu) {
-                                    $set('pagu', $pagu_kegiatan_sebelumnya);
-                                    Notification::make()
-                                        ->title('Pagu Kegiatan Melebihi Batas')
-                                        ->body('Pagu tidak boleh melebihi dari pagu program sebesar Rp.' . $program->pagu)
-                                        ->danger()
-                                        ->send();
+                                if ($get('pagu') == null) {
+                                    $set('pagu', '');
+                                } else {
+                                    if ((($jumlah_pagu_program + $get('pagu') - $pagu_kegiatan_sebelumnya) > $program->pagu)) {
+                                        $set('pagu', $pagu_kegiatan_sebelumnya);
+                                        Notification::make()
+                                            ->title('Pagu Kegiatan Melebihi Batas')
+                                            ->body('Pagu tidak boleh melebihi dari pagu program sebesar Rp.' . $program->pagu)
+                                            ->danger()
+                                            ->send();
+                                    }
                                 }
                             })
                             ->numeric(),
