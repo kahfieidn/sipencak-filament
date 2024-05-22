@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('year')->unique();
             $table->bigInteger('batasan_pagu')->default(0);
+            $table->bigInteger('sisa_pagu')->default(0);
             $table->timestamps();
         });
     }

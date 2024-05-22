@@ -15,6 +15,7 @@ class Program extends Model
         'kode',
         'nama_program',
         'pagu',
+        'sisa_pagu',
     ];
 
     public function periode()

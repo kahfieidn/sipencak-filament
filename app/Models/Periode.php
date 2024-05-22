@@ -15,6 +15,8 @@ class Periode extends Model
     protected $fillable = [
         'year',
         'batasan_pagu',
+        'sisa_pagu',
+
     ];
 
     public function programs()
