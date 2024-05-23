@@ -20,9 +20,8 @@ class PeriodeResource extends Resource
     protected static ?string $model = Periode::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-
     protected static ?string $navigationGroup = 'System Configuration';
-
+    
     public static function form(Form $form): Form
     {
         return $form
@@ -36,8 +35,8 @@ class PeriodeResource extends Resource
                             ->required()
                             ->numeric(),
                         Forms\Components\TextInput::make('sisa_pagu')
-                            ->required()
-                            ->disabledOn('edit')
+                            ->disabled()
+                            ->reactive()
                             ->numeric(),
                     ])->columns(3),
             ]);
@@ -70,7 +69,6 @@ class PeriodeResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

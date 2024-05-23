@@ -21,6 +21,11 @@ class SubKegiatanResource extends Resource
     protected static bool $shouldRegisterNavigation = false;
 
 
+    protected $listeners = ['refreshRelation' => '$refresh'];
+
+    // protected static bool $isLazy = false;
+
+
     public static function form(Form $form): Form
     {
         return $form

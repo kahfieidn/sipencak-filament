@@ -4,14 +4,18 @@ namespace App\Filament\Resources\PeriodeResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Periode;
 use App\Models\Program;
+use Livewire\Component;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\PeriodeResource;
+use App\Filament\Resources\PeriodeResource\Pages\EditPeriode;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
-use App\Models\Periode;
+
 
 class ProgramRelationManager extends RelationManager
 {
@@ -21,12 +25,14 @@ class ProgramRelationManager extends RelationManager
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('id')
+                    ->hiddenOn('create', 'edit'),
                 Forms\Components\TextInput::make('kode')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Select::make('periode_id')
                     ->relationship('periode', 'year')
-                    ->hiddenOn('create','edit'),
+                    ->hiddenOn('create', 'edit'),
                 Forms\Components\TextInput::make('nama_program')
                     ->required()
                     ->maxLength(255),
@@ -85,12 +91,17 @@ class ProgramRelationManager extends RelationManager
                 Tables\Actions\EditAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
                         $periode = Periode::find($data['periode_id']);
-                        $jumlah_batasan_pagu_update = Program::where('periode_id', $periode->id)->sum('pagu')->where('id', '!=', $data['id']);
-                        dd($jumlah_batasan_pagu_update);
+                        $jumlah_batasan_pagu_update = Program::where('periode_id', $periode->id)
+                            ->where('id', '!=', $data['id'])
+                            ->sum('pagu');
+                        $final_jumlah_pagu_kegiatan = $jumlah_batasan_pagu_update + $data['pagu'];
                         $periode->update([
-                            'sisa_pagu' => $periode->batasan_pagu - $jumlah_batasan_pagu_update
+                            'sisa_pagu' => $periode->batasan_pagu - $final_jumlah_pagu_kegiatan
                         ]);
                         return $data;
+                    })
+                    ->after(function ($livewire) {
+                        $livewire->dispatch('refreshRelation')->to(EditPeriode::class);
                     }),
                 Tables\Actions\DeleteAction::make(),
             ])
