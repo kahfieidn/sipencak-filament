@@ -21,7 +21,7 @@ class PeriodeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationGroup = 'System Configuration';
-    
+
     public static function form(Form $form): Form
     {
         return $form
@@ -33,10 +33,13 @@ class PeriodeResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('batasan_pagu')
                             ->required()
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function ($state, $set, $get, string $operation) {
+                                $set('sisa_pagu', $get('batasan_pagu'));
+                            })
                             ->numeric(),
                         Forms\Components\TextInput::make('sisa_pagu')
-                            ->disabled()
-                            ->reactive()
+                            ->extraInputAttributes(['readonly' => true])
                             ->numeric(),
                     ])->columns(3),
             ]);

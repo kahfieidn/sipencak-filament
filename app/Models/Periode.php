@@ -16,7 +16,6 @@ class Periode extends Model
         'year',
         'batasan_pagu',
         'sisa_pagu',
-
     ];
 
     public function programs()
