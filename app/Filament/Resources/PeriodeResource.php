@@ -82,7 +82,6 @@ class PeriodeResource extends Resource
         return [
             //
             ProgramRelationManager::class,
-            KegiatanRelationManager::class,
         ];
     }
 

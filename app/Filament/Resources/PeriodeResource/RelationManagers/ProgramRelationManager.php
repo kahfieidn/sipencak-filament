@@ -40,34 +40,44 @@ class ProgramRelationManager extends RelationManager
                     ->required()
                     ->reactive()
                     ->numeric()
-                    ->afterStateUpdated(function ($state, $set, $get) {
-                        // dd($get('id'));
-                        // $program = Program::find($get('id'));
-                        // $periode = $program->periode; // 52rb
-                        // // $program = Program::find($get('program_id'));
-                        // // if (!$program) {
-                        // //     Notification::make()
-                        // //         ->title('Program Wajib di Isi')
-                        // //         ->body('Program harus di pilih terlebih dahulu.')
-                        // //         ->danger()
-                        // //         ->send();
-                        // //     return;
-                        // // }
-                        // $jumlah_pagu_program_sebelumnya = Program::where('periode_id', $periode->id)->sum('pagu');
-                        // // $pagu_kegiatan_sebelumnya = Kegiatan::where('id', $get('id'))->pluck('pagu')->first();
-                        // if ($get('pagu') == null) {
-                        //     $set('pagu', '');
-                        // } else {
-                        //     if (($jumlah_pagu_program_sebelumnya + $get('pagu') - $program->pagu) > $periode->batasan_pagu) {
-                        //         // dd($program->pagu);
-                        //         $set('pagu', $program->pagu);
-                        //         Notification::make()
-                        //             ->title('Pagu Kegiatan Melebihi Batas Program')
-                        //             ->body('Pagu tidak boleh melebihi dari pagu tahunan sebesar Rp.' . $periode->batasan_pagu)
-                        //             ->danger()
-                        //             ->send();
-                        //     }
-                        // }
+                    ->afterStateUpdated(function ($state, $set, $get, string $operation) {
+                        if ($operation === 'edit') {
+                            $program = Program::find($get('id'));
+                            if (!$program) {
+                                Notification::make()
+                                    ->title('Program Wajib di Isi')
+                                    ->body('Program harus di pilih terlebih dahulu.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            $periode = $program->periode; // 52rb
+                            $pagu_program_sebelumnya = Program::where('id', $get('id'))->pluck('pagu')->first();
+                            $jumlah_batasan_pagu_program_exclude = Program::where('periode_id', $periode->id)
+                                ->where('id', '!=', $program->id)
+                                ->sum('pagu');
+                            if ($get('pagu') == null) {
+                                $set('pagu', '');
+                            } else {
+                                if (($jumlah_batasan_pagu_program_exclude + $get('pagu')) > $periode->batasan_pagu) {
+                                    $set('pagu', $pagu_program_sebelumnya);
+                                    Notification::make()
+                                        ->title('Pagu Kegiatan Melebihi Batas Program')
+                                        ->body('Pagu tidak boleh melebihi dari pagu tahunan sebesar Rp.' . $periode->batasan_pagu)
+                                        ->danger()
+                                        ->send();
+                                }
+                            }
+                        } else if ($operation === 'create') {
+                            if ($get('pagu') > $this->getOwnerRecord()->batasan_pagu) {
+                                $set('pagu', '');
+                                Notification::make()
+                                    ->title('Pagu Kegiatan Melebihi Batas Program')
+                                    ->body('Pagu tidak boleh melebihi dari pagu tahunan sebesar Rp.' . $this->getOwnerRecord()->batasan_pagu)
+                                    ->danger()
+                                    ->send();
+                            };
+                        }
                     }),
             ]);
     }
@@ -85,25 +95,35 @@ class ProgramRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->after(function ($livewire) {
+                        $jumlah_pagu_program = Program::where('periode_id', $this->getOwnerRecord()->id)
+                            ->sum('pagu');
+                        $this->getOwnerRecord()->update([
+                            'sisa_pagu' => $this->getOwnerRecord()->batasan_pagu - $jumlah_pagu_program
+                        ]);
+                        $livewire->dispatch('refreshRelation')->to(EditPeriode::class);
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $periode = Periode::find($data['periode_id']);
-                        $jumlah_batasan_pagu_update = Program::where('periode_id', $periode->id)
-                            ->where('id', '!=', $data['id'])
-                            ->sum('pagu');
-                        $final_jumlah_pagu_kegiatan = $jumlah_batasan_pagu_update + $data['pagu'];
-                        $periode->update([
-                            'sisa_pagu' => $periode->batasan_pagu - $final_jumlah_pagu_kegiatan
-                        ]);
-                        return $data;
-                    })
                     ->after(function ($livewire) {
+                        $jumlah_pagu_program = Program::where('periode_id', $this->getOwnerRecord()->id)
+                            ->sum('pagu');
+                        $this->getOwnerRecord()->update([
+                            'sisa_pagu' => $this->getOwnerRecord()->batasan_pagu - $jumlah_pagu_program
+                        ]);
                         $livewire->dispatch('refreshRelation')->to(EditPeriode::class);
                     }),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->after(function ($livewire) {
+                        $jumlah_pagu_program = Program::where('periode_id', $this->getOwnerRecord()->id)
+                            ->sum('pagu');
+                        $this->getOwnerRecord()->update([
+                            'sisa_pagu' => $this->getOwnerRecord()->batasan_pagu - $jumlah_pagu_program
+                        ]);
+                        $livewire->dispatch('refreshRelation')->to(EditPeriode::class);
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
