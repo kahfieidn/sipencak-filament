@@ -69,7 +69,7 @@ class ProgramRelationManager extends RelationManager
                                 }
                             }
                         } else if ($operation === 'create') {
-                            if ($get('pagu') > $this->getOwnerRecord()->batasan_pagu) {
+                            if ($get('pagu') > $this->getOwnerRecord()->sisa_pagu) {
                                 $set('pagu', '');
                                 Notification::make()
                                     ->title('Pagu Kegiatan Melebihi Batas Program')
