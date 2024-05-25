@@ -12,9 +12,10 @@ use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PeriodeResource;
-use App\Filament\Resources\PeriodeResource\Pages\EditPeriode;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
+use App\Filament\Resources\PeriodeResource\Pages\EditPeriode;
 
 
 class ProgramRelationManager extends RelationManager
@@ -38,7 +39,7 @@ class ProgramRelationManager extends RelationManager
                     ->maxLength(255),
                 Forms\Components\TextInput::make('pagu')
                     ->required()
-                    ->reactive()
+                    ->live(debounce: 500)
                     ->numeric()
                     ->afterStateUpdated(function ($state, $set, $get, string $operation) {
                         if ($operation === 'edit') {
@@ -69,6 +70,8 @@ class ProgramRelationManager extends RelationManager
                                 }
                             }
                         } else if ($operation === 'create') {
+                            $set('sisa_pagu', $get('pagu'));
+
                             if ($get('pagu') > $this->getOwnerRecord()->sisa_pagu) {
                                 $set('pagu', '');
                                 Notification::make()
@@ -79,6 +82,16 @@ class ProgramRelationManager extends RelationManager
                             };
                         }
                     }),
+                Forms\Components\TextInput::make('Sisa Pagu Periode')
+                    ->label('Sisa Pagu' . ' ' . $this->getOwnerRecord()->year)
+                    ->disabled()
+                    ->hiddenOn('edit')
+                    ->default($this->getOwnerRecord()->sisa_pagu)
+                    ->numeric(),
+                Forms\Components\TextInput::make('sisa_pagu')
+                    ->extraInputAttributes(['readonly' => true])
+                    ->hiddenOn('edit')
+                    ->numeric(),
             ]);
     }
 
@@ -89,7 +102,8 @@ class ProgramRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('kode'),
                 Tables\Columns\TextColumn::make('nama_program'),
-                Tables\Columns\TextColumn::make('pagu'),
+                Tables\Columns\TextColumn::make('pagu')
+                    ->summarize(Sum::make()->label('Total Pagu Program'))
             ])
             ->filters([
                 //

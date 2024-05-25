@@ -90,6 +90,9 @@ class KegiatanResource extends Resource
                                 return $group->id;
                             })
                             ->required(),
+                        Forms\Components\TextInput::make('sisa_pagu')
+                            ->disabled()
+                            ->numeric(),
                         Forms\Components\TextInput::make('kode')
                             ->required()
                             ->maxLength(255),
@@ -100,7 +103,6 @@ class KegiatanResource extends Resource
                             ->required()
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {
-
                                 $program = Program::find($get('program_id'));
 
                                 if (!$program) {
@@ -127,6 +129,7 @@ class KegiatanResource extends Resource
                                     }
                                 }
                             })
+                            ->columnSpanFull()
                             ->numeric(),
                     ])->columns(3)
                     ->collapsible()

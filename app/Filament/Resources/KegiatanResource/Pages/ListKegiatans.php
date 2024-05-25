@@ -28,13 +28,19 @@ class ListKegiatans extends ListRecords
     {
         return [
             '2024' => Tab::make()->modifyQueryUsing(function (Builder $query) {
-                $query->where('periode_id', 1);
+                $query->whereHas('periode', function (Builder $query) {
+                    $query->where('year', 2024);
+                });
             }),
             '2025' => Tab::make()->modifyQueryUsing(function (Builder $query) {
-                $query->where('periode_id', 2);
+                $query->whereHas('periode', function (Builder $query) {
+                    $query->where('year', 2025);
+                });
             }),
             '2026' => Tab::make()->modifyQueryUsing(function (Builder $query) {
-                $query->where('periode_id', 3);
+                $query->whereHas('periode', function (Builder $query) {
+                    $query->where('year', 2026);
+                });
             }),
         ];
     }
