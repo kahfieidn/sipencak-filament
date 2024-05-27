@@ -39,7 +39,7 @@ class ProgramRelationManager extends RelationManager
                     ->maxLength(255),
                 Forms\Components\TextInput::make('pagu')
                     ->required()
-                    ->live()
+                    ->live(debounce:500)
                     ->numeric()
                     ->afterStateUpdated(function ($state, $set, $get, string $operation) {
                         if ($operation === 'edit') {

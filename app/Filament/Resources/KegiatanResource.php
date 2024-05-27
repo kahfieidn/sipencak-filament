@@ -55,44 +55,56 @@ class KegiatanResource extends Resource
                                 $set('program_id', null);
                             })
                             ->required(),
+                        // Forms\Components\TextInput::make('program.sisa_pagu')
+                        //     ->reactive()
+                        //     ->disabled()
+                        //     ->default(fn (Get $get): ?float => Program::find($get('program_id'))->sisa_pagu ?? null)
+                        //     ->numeric(),
                         Forms\Components\Select::make('program_id')
-                            ->options(fn (Get $get): Collection => Program::query()
-                                ->where('periode_id', $get('periode_id'))
-                                ->pluck('nama_program', 'id'))
-                            ->searchable()
-                            ->createOptionForm(function (Get $get) {
-                                $periodeId = $get('periode_id'); // Get the current periode_id value
-                                return [
-                                    Section::make('Program Baru')
-                                        ->schema([
-                                            Forms\Components\Select::make('periode_id')
-                                                ->options(Periode::all()->pluck('year', 'id')->toArray())
-                                                ->default($periodeId), // Set the default value to the current periode_id
-                                            Forms\Components\TextInput::make('kode')
-                                                ->required()
-                                                ->maxLength(255),
-                                            Forms\Components\TextInput::make('nama_program')
-                                                ->required()
-                                                ->maxLength(255),
-                                            Forms\Components\TextInput::make('pagu')
-                                                ->required()
-                                                ->numeric(),
-                                        ])->columns(2),
-                                ];
-                            })
-                            ->createOptionUsing(function ($data) {
-                                $group = new Program();
-                                $group->periode_id = $data['periode_id'];
-                                $group->kode = $data['kode'];
-                                $group->nama_program = $data['nama_program'];
-                                $group->pagu = $data['pagu'];
-                                $group->save();
-                                return $group->id;
-                            })
-                            ->required(),
-                        Forms\Components\TextInput::make('sisa_pagu')
-                            ->disabled()
-                            ->numeric(),
+                        ->options(fn (Get $get): Collection => Program::query()
+                            ->where('periode_id', $get('periode_id'))
+                            ->pluck('nama_program', 'id'))
+                        ->searchable()
+                        ->createOptionForm(function (Get $get) {
+                            $periodeId = $get('periode_id'); // Get the current periode_id value
+                            return [
+                                Section::make('Program Baru')
+                                    ->schema([
+                                        Forms\Components\Select::make('periode_id')
+                                            ->options(Periode::all()->pluck('year', 'id')->toArray())
+                                            ->default($periodeId), // Set the default value to the current periode_id
+                                        Forms\Components\TextInput::make('kode')
+                                            ->required()
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('nama_program')
+                                            ->required()
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('pagu')
+                                            ->required()
+                                            ->numeric(),
+                                    ])->columns(2),
+                            ];
+                        })
+                        ->createOptionUsing(function ($data) {
+                            $group = new Program();
+                            $group->periode_id = $data['periode_id'];
+                            $group->kode = $data['kode'];
+                            $group->nama_program = $data['nama_program'];
+                            $group->pagu = $data['pagu'];
+                            $group->save();
+                            return $group->id;
+                        })
+                        ->live()
+                        ->afterStateUpdated(function (Set $set, $state) {
+                            $sisaPagu = Program::find($state)->sisa_pagu ?? null;
+                            $set('program.sisa_pagu', $sisaPagu);
+                        })
+                        ->required(),
+                        Forms\Components\Fieldset::make('Sisa Pagu Program')
+                            ->relationship('program')
+                            ->schema([
+                                Forms\Components\TextInput::make('sisa_pagu'),
+                            ]),
                         Forms\Components\TextInput::make('kode')
                             ->required()
                             ->maxLength(255),
@@ -102,36 +114,58 @@ class KegiatanResource extends Resource
                         Forms\Components\TextInput::make('pagu')
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) {
-                                $program = Program::find($get('program_id'));
-
-                                if (!$program) {
-                                    Notification::make()
-                                        ->title('Program Wajib di Isi')
-                                        ->body('Program harus di pilih terlebih dahulu.')
-                                        ->danger()
-                                        ->send();
-                                    return;
-                                }
-                                $jumlah_pagu_program = $program->kegiatan->sum('pagu');
-                                $pagu_kegiatan_sebelumnya = Kegiatan::where('id', $get('id'))->pluck('pagu')->first();
-
-                                if ($get('pagu') == null) {
-                                    $set('pagu', '');
-                                } else {
-                                    if ((($jumlah_pagu_program + $get('pagu') - $pagu_kegiatan_sebelumnya) > $program->pagu)) {
-                                        $set('pagu', $pagu_kegiatan_sebelumnya);
+                            ->afterStateUpdated(function ($state, $set, $get, string $operation) {
+                                if ($operation === 'edit') {
+                                    dd("here");
+                                } else if ($operation === 'create') {
+                                    $program = Program::find($get('program_id'));
+                                    if (!$program) {
                                         Notification::make()
-                                            ->title('Pagu Kegiatan Melebihi Batas')
-                                            ->body('Pagu tidak boleh melebihi dari pagu program sebesar Rp.' . $program->pagu)
+                                            ->title('Program Wajib di Isi')
+                                            ->body('Program harus di pilih terlebih dahulu.')
+                                            ->danger()
+                                            ->send();
+                                        return;
+                                    }
+                                    if ($get('pagu') > $program->sisa_pagu) {
+                                        $set('pagu', '');
+                                        Notification::make()
+                                            ->title('Pagu Kegiatan Melebihi Batas Program')
+                                            ->body('Pagu tidak boleh melebihi dari pagu tahunan sebesar Rp.' . $program->pagu)
                                             ->danger()
                                             ->send();
                                     }
                                 }
+
+                                // $program = Program::find($get('program_id'));
+
+                                // if (!$program) {
+                                //     Notification::make()
+                                //         ->title('Program Wajib di Isi')
+                                //         ->body('Program harus di pilih terlebih dahulu.')
+                                //         ->danger()
+                                //         ->send();
+                                //     return;
+                                // }
+                                // $jumlah_pagu_program = $program->kegiatan->sum('pagu');
+                                // $pagu_kegiatan_sebelumnya = Kegiatan::where('id', $get('id'))->pluck('pagu')->first();
+
+                                // if ($get('pagu') == null) {
+                                //     $set('pagu', '');
+                                // } else {
+                                //     if ((($jumlah_pagu_program + $get('pagu') - $pagu_kegiatan_sebelumnya) > $program->pagu)) {
+                                //         $set('pagu', $pagu_kegiatan_sebelumnya);
+                                //         Notification::make()
+                                //             ->title('Pagu Kegiatan Melebihi Batas')
+                                //             ->body('Pagu tidak boleh melebihi dari pagu program sebesar Rp.' . $program->pagu)
+                                //             ->danger()
+                                //             ->send();
+                                //     }
+                                // }
                             })
                             ->columnSpanFull()
                             ->numeric(),
-                    ])->columns(3)
+                    ])->columns(2)
                     ->collapsible()
             ]);
     }
@@ -154,6 +188,15 @@ class KegiatanResource extends Resource
                     ->summarize([
                         Sum::make()
                             ->label('Total Pagu')
+                            ->money('Rp.')
+                            ->numeric(decimalPlaces: 2),
+                    ])->money('Rp.')
+                    ->numeric(decimalPlaces: 2),
+                Tables\Columns\TextColumn::make('sisa_pagu')
+                    ->sortable()
+                    ->summarize([
+                        Sum::make()
+                            ->label('Total Sisa Pagu')
                             ->money('Rp.')
                             ->numeric(decimalPlaces: 2),
                     ])->money('Rp.')
@@ -213,7 +256,7 @@ class KegiatanResource extends Resource
     {
         return [
             'index' => Pages\ListKegiatans::route('/'),
-            // 'create' => Pages\CreateKegiatan::route('/create'),
+            'create' => Pages\CreateKegiatan::route('/create'),
             'edit' => Pages\EditKegiatan::route('/{record}/edit'),
         ];
     }

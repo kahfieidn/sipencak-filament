@@ -6,6 +6,7 @@ name: 🚀 Deployment
 jobs:
   web-deploy:
     name: 🎉 Deploy
+    timeout-minutes: 1440
     runs-on: ubuntu-latest
     steps:
     - name: 🚚 Get latest code

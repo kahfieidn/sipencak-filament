@@ -22,6 +22,7 @@ class Kegiatan extends Model
         'nama_kegiatan',
         'pagu',
         'status',
+        'sisa_pagu'
     ];
 
     public function user(): BelongsTo
