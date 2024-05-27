@@ -10,6 +10,7 @@ use Livewire\Attributes\On;
 class EditPeriode extends EditRecord
 {
     protected static string $resource = PeriodeResource::class;
+    
     protected $listeners = ['refreshRelation' => 'refresh'];
 
     protected function getHeaderActions(): array
@@ -23,5 +24,7 @@ class EditPeriode extends EditRecord
     public function refresh(){
         $this->fillForm();
     }
+
+
 
 }

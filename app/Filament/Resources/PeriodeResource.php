@@ -33,15 +33,8 @@ class PeriodeResource extends Resource
                             ->maxLength(255),
                         Forms\Components\TextInput::make('batasan_pagu')
                             ->required()
-                            ->live(debounce: 500)
-                            ->afterStateUpdated(function ($state, $set, $get, string $operation) {
-                                $set('sisa_pagu', $get('batasan_pagu'));
-                            })
                             ->numeric(),
-                        Forms\Components\TextInput::make('sisa_pagu')
-                            ->extraInputAttributes(['readonly' => true])
-                            ->numeric(),
-                    ])->columns(3),
+                    ])->columns(2),
             ]);
     }
 
@@ -92,7 +85,7 @@ class PeriodeResource extends Resource
     {
         return [
             'index' => Pages\ListPeriodes::route('/'),
-            // 'create' => Pages\CreatePeriode::route('/create'),
+            'create' => Pages\CreatePeriode::route('/create'),
             'view' => Pages\ViewPeriode::route('/{record}'),
             'edit' => Pages\EditPeriode::route('/{record}/edit'),
         ];
