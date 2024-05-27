@@ -39,7 +39,7 @@ class ProgramRelationManager extends RelationManager
                     ->maxLength(255),
                 Forms\Components\TextInput::make('pagu')
                     ->required()
-                    ->live(debounce: 500)
+                    ->live()
                     ->numeric()
                     ->afterStateUpdated(function ($state, $set, $get, string $operation) {
                         if ($operation === 'edit') {
@@ -88,10 +88,6 @@ class ProgramRelationManager extends RelationManager
                     ->hiddenOn('edit')
                     ->default($this->getOwnerRecord()->sisa_pagu)
                     ->numeric(),
-                Forms\Components\TextInput::make('sisa_pagu')
-                    ->extraInputAttributes(['readonly' => true])
-                    ->hiddenOn('edit')
-                    ->numeric(),
             ]);
     }
 
@@ -103,13 +99,20 @@ class ProgramRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('kode'),
                 Tables\Columns\TextColumn::make('nama_program'),
                 Tables\Columns\TextColumn::make('pagu')
-                    ->summarize(Sum::make()->label('Total Pagu Program'))
+                    ->summarize(Sum::make()->label('Total Pagu Program')),
+                Tables\Columns\TextColumn::make('sisa_pagu')
+                    ->summarize(Sum::make()->label('Total Sisa Pagu Program'))
             ])
             ->filters([
                 //
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['sisa_pagu'] = $data['pagu'];
+
+                        return $data;
+                    })
                     ->after(function ($livewire) {
                         $jumlah_pagu_program = Program::where('periode_id', $this->getOwnerRecord()->id)
                             ->sum('pagu');

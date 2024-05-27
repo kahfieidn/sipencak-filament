@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('kode');
             $table->string('nama_kegiatan');
             $table->bigInteger('pagu')->default(0);
+            $table->bigInteger('sisa_pagu')->default(0);
             $table->enum('status', ['Dibuka', 'Dikunci']);
             $table->timestamps();
         });
