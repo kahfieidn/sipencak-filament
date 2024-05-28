@@ -13,9 +13,6 @@ jobs:
 
     - name: Install Dependencies
       run: composer install --ignore-platform-reqs
-
-    - name: Create env file
-      run: echo "${{ secrets.DOT_ENV_PRODUCTION }}" > .env
       
     - name: Config Clearing
       run: php artisan config:clear
@@ -50,3 +47,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         server-dir: /
+        protocol: ftps
