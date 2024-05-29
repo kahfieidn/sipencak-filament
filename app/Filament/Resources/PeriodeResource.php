@@ -34,7 +34,11 @@ class PeriodeResource extends Resource
                         Forms\Components\TextInput::make('batasan_pagu')
                             ->required()
                             ->numeric(),
-                    ])->columns(2),
+                        Forms\Components\TextInput::make('sisa_pagu')
+                            ->hiddenOn('create')
+                            ->disabled()
+                            ->numeric(),
+                    ])->columns(3),
             ]);
     }
 
