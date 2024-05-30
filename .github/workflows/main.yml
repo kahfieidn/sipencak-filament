@@ -29,6 +29,9 @@ jobs:
     - name: Directory Permissions
       run: chmod -R 777 storage bootstrap/cache
 
+    - name: Directory Permissions
+      run: chmod -R 777 vendor
+
     - name: Install Npm
       run: npm install
 
