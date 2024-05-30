@@ -19,6 +19,9 @@ jobs:
 
     - name: Cache Clearing
       run: php artisan cache:clear
+
+    - name: Generate App Key
+      run: php artisan key:generate
       
     - name: Generate storage link
       run: php artisan storage:link
